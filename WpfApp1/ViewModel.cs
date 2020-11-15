@@ -7,6 +7,10 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Collections.ObjectModel;
+using System.Dynamic;
+
+using Calc;
 
 namespace WpfApp1
 {
@@ -20,6 +24,11 @@ namespace WpfApp1
         protected virtual void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        public ViewModel()
+        {
+            _expression = new ObservableCollection<Expression>();
         }
 
         private string textValue = "0";
@@ -62,40 +71,56 @@ namespace WpfApp1
         {
             get => calculate ?? new RelayCommand<string>(x =>
             {
-                if (rightValue == null)
+                /*if (rightValue == null)
                 {
                     if (x == "=") return;
                     op = x;
                 }
+                if (op != "=")
+                {
+                    op = x;
+                }
                 else if (x == "=")
                 {
-                    switch (op)
-                    {
-                        case "+": leftValue = Convert.ToString(Double.Parse(leftValue) + Double.Parse(rightValue)); break;
-                        case "-": leftValue = Convert.ToString(Double.Parse(leftValue) - Double.Parse(rightValue)); break;
-                        case "*": leftValue = Convert.ToString(Double.Parse(leftValue) * Double.Parse(rightValue)); break;
-                        case "/": leftValue = Convert.ToString(Double.Parse(leftValue) / Double.Parse(rightValue)); break;
-                        default: break;
-                    }
-
+                    string exp = leftValue + op + rightValue;
+                    leftValue = ParserCalc.calculate(exp);
+                    
                     op = null;
                     rightValue = null;
+                }*/
+
+
+
+                if (rightValue == null)
+                {
+                    if (x == "=")
+                        Expressions.Add(new Expression(textValue, leftValue));
+
+                    else op = x;
+                }
+                else if (rightValue != null)
+                {
+                    if (x == "=")
+                    {
+                        string exp = leftValue + op + rightValue;
+                        leftValue = ParserCalc.calculate(exp);
+                        Expressions.Add(new Expression(textValue, leftValue)); // &&&&&
+                        op = null;
+                    }
+                    else
+                    {
+                        leftValue = leftValue + op + rightValue;
+                        op = x;
+                    }
+                    
+                    rightValue = null;
+                       
                 }
 
                 PrintValue();
 
             }, x => true);
         }
-
-        /*private ICommand _comma;
-        public ICommand Comma
-        {
-            get => _comma ?? new RelayCommand<string>(x =>
-            {
-                TextValue += x;
-            }, x => !TextValue.Contains(x));
-        }
-        */
 
         private ICommand _clear;
         public ICommand Clear
@@ -107,6 +132,23 @@ namespace WpfApp1
                 rightValue = null;
                 op = null;
             }, () => true);
+        }
+
+        private ObservableCollection<Expression> _expression;
+        public ObservableCollection<Expression> Expressions
+        {
+            get => _expression;
+        }
+
+        public class Expression
+        {
+            public Expression(string exp, string answer)
+            {
+                Exp = exp;
+                Value = answer;
+            }
+            public string Exp { get; }
+            public string Value { get; }
         }
     }
 }

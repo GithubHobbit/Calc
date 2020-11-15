@@ -6,7 +6,7 @@ namespace Calc
 {
     public class ParserCalc
     {
-        public string calculate(string exp)
+        public static string calculate(string exp)
         {
             exp = RemoveBrackets(exp);
             int[] arrayIndexOp = FillArrayOfSymbols(exp, new char[] { '-', '+', '*', '/' });
@@ -27,7 +27,7 @@ namespace Calc
             return result;
         }
 
-        public string RemoveBrackets(string exp)
+        public static string RemoveBrackets(string exp)
         {
             int countStartBracket = exp.Split('(').Length - 1;
             int countEndBracket = exp.Split(')').Length - 1;
@@ -70,7 +70,7 @@ namespace Calc
             return exp;
         }
 
-        public string SolveExp(int[] arrOp, string[] arrValue, string exp)
+        public static string SolveExp(int[] arrOp, string[] arrValue, string exp)
         {
             for (int i = 0; i < arrOp.Length; i++)
             {
@@ -106,7 +106,7 @@ namespace Calc
             }
             return result;
         }
-        public int[] FillArrayOfSymbols( string exp, char[] symbols) // Заносит в массив индексы всех символов в выражении
+        public static int[] FillArrayOfSymbols( string exp, char[] symbols) // Заносит в массив индексы всех символов в выражении
         {
             int[] arrOfIndexSymbols = new int[100];
             int size = 0;

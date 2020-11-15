@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfApp1"
         mc:Ignorable="d"
-        Title="MainWindow" Height="600" Width="400"
+        Title="MainWindow" Height="600" Width="700"
         Background="Black">
 
     <Grid Margin="10 10" Background="Black">
@@ -22,13 +22,14 @@
             <ColumnDefinition/>
             <ColumnDefinition/>
             <ColumnDefinition/>
+            <ColumnDefinition Width="300" />
         </Grid.ColumnDefinitions>
 
         <Border Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="3" BorderBrush="Aqua" BorderThickness="1" Margin="5, 0">
             <TextBlock Text="{Binding TextValue}"  Style="{StaticResource TextBlockStyle}"/>
         </Border>
 
-        <Button Grid.Column="0" Grid.Row="1" Content="*" Command="{Binding Calculate}" Style="{StaticResource ButtonStyle}"/> 
+        <Button Grid.Column="0" Grid.Row="1" Content="*" Command="{Binding Calculate}" Style="{StaticResource ButtonStyle}"/>
         <Button Grid.Column="1" Grid.Row="1" Content="-" Command="{Binding Calculate}" Style="{StaticResource ButtonStyle}"/>
         <Button Grid.Column="2" Grid.Row="1" Content="+" Command="{Binding Calculate}" Style="{StaticResource ButtonStyle}"/>
         <Button Grid.Column="0" Grid.Row="2" Content="/" Command="{Binding Calculate}" Style="{StaticResource ButtonStyle}"/>
@@ -45,7 +46,28 @@
         <Button Grid.Column="2" Grid.Row="5" Content="9" Command="{Binding AddNumber}" Style="{StaticResource ButtonStyle}"/>
         <Button Grid.Column="0" Grid.Row="6" Content="0" Command="{Binding AddNumber}" Style="{StaticResource ButtonStyle}"  Grid.ColumnSpan="2"/>
         <Button Grid.Column="2" Grid.Row="6" Content="=" Command="{Binding Calculate}" Style="{StaticResource ButtonStyle}"/>
-        
-        
+
+        <TabControl Grid.Column="5" Grid.RowSpan="7" Background="Black">
+            <TabItem Header="History" >
+                <ItemsControl Grid.Column="4" Grid.RowSpan="7" ItemsSource="{Binding Expressions}" Style="{StaticResource History}">
+                    <ItemsControl.ItemTemplate >
+                        <DataTemplate DataType="{x:Type Expression}" >
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <TextBlock Grid.Column="0" Text="{Binding Exp, Mode=OneWay}"/>
+                                <TextBlock Grid.Column="1" Text="{Binding Value, Mode=OneWay}"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </TabItem>
+        </TabControl>
     </Grid>
 </Window>

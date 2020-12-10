@@ -10,6 +10,9 @@ using System.Windows.Input;
 using System.Collections.ObjectModel;
 using System.Dynamic;
 
+using Newtonsoft.Json;
+using System.IO;
+
 using Calc;
 
 namespace WpfApp1
@@ -29,6 +32,7 @@ namespace WpfApp1
         public ViewModel()
         {
             _expression = new ObservableCollection<Expression>();
+            _memory = new ObservableCollection<string>();
         }
 
         private string textValue = "0";
@@ -44,6 +48,26 @@ namespace WpfApp1
 
         public void PrintValue() {
             TextValue = leftValue + " " + op + " " + rightValue;
+        }
+
+        private ICommand _toMemory;
+        public ICommand AddToMemory
+        {
+            get => _toMemory ?? new RelayCommand(
+                () =>
+                {
+                    Memory.Add(TextValue);
+                }, () => TextValue.Length > 0);
+        }
+
+        private ICommand _removeFromMemory;
+        public ICommand RemoveFromMemory
+        {
+            get => _removeFromMemory ?? new RelayCommand(
+                () =>
+                {
+                    Memory.RemoveAt(Memory.Count() - 1);
+                }, () => Memory.Any());
         }
 
 
@@ -71,26 +95,6 @@ namespace WpfApp1
         {
             get => calculate ?? new RelayCommand<string>(x =>
             {
-                /*if (rightValue == null)
-                {
-                    if (x == "=") return;
-                    op = x;
-                }
-                if (op != "=")
-                {
-                    op = x;
-                }
-                else if (x == "=")
-                {
-                    string exp = leftValue + op + rightValue;
-                    leftValue = ParserCalc.calculate(exp);
-                    
-                    op = null;
-                    rightValue = null;
-                }*/
-
-
-
                 if (rightValue == null)
                 {
                     if (x == "=")
@@ -104,7 +108,7 @@ namespace WpfApp1
                     {
                         string exp = leftValue + op + rightValue;
                         leftValue = ParserCalc.calculate(exp);
-                        Expressions.Add(new Expression(textValue, leftValue)); // &&&&&
+                        Expressions.Add(new Expression(textValue, leftValue));
                         op = null;
                     }
                     else
@@ -142,13 +146,34 @@ namespace WpfApp1
 
         public class Expression
         {
-            public Expression(string exp, string answer)
-            {
-                Exp = exp;
-                Value = answer;
-            }
             public string Exp { get; }
             public string Value { get; }
+            public Expression(string expression, string result)
+            {
+                Exp = expression;
+                Value = result;
+            }
         }
+
+        private ObservableCollection<string> _memory;
+        public ObservableCollection<string> Memory
+        {
+            get => _memory;
+        }
+
+        /*
+        var serializeObject = JsonConvert.SerializeObject(student, Base64Formatting.Indented);
+        File.WriteAllText("my-json.json", serializeObject);
+            var result = FileStyleUriParser.ReadAllText("my-json.json");
+        File.Exist();
+
+        Var otherStudent = JsonConvert.DeserializedObject<Group>(serializeObject);
+        
+        public static void expr(Expression exp)
+        {
+            var serializeObject = JsonConvert.SerializeObject(exp, Formatting.Indented);
+            File.WriteAllText("my-json.json", serializeObject);
+            var result = File.ReadAllText("my-json.json");
+        } */
     }
 }

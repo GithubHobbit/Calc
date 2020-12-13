@@ -27,7 +27,7 @@ namespace Calc
             return result;
         }
 
-        public static string RemoveBrackets(string exp)
+        private static string RemoveBrackets(string exp)
         {
             int countStartBracket = exp.Split('(').Length - 1;
             int countEndBracket = exp.Split(')').Length - 1;
@@ -70,7 +70,7 @@ namespace Calc
             return exp;
         }
 
-        public static string SolveExp(int[] arrOp, string[] arrValue, string exp)
+        private static string SolveExp(int[] arrOp, string[] arrValue, string exp)
         {
             for (int i = 0; i < arrOp.Length; i++)
             {
@@ -106,7 +106,7 @@ namespace Calc
             }
             return result;
         }
-        public static int[] FillArrayOfSymbols( string exp, char[] symbols) // Заносит в массив индексы всех символов в выражении
+        private static int[] FillArrayOfSymbols( string exp, char[] symbols) // Заносит в массив индексы всех символов в выражении
         {
             int[] arrOfIndexSymbols = new int[100];
             int size = 0;

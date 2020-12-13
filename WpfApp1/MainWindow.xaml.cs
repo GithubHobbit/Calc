@@ -19,7 +19,7 @@ namespace WpfApp1
     {
         public MainWindow()
         {
-            this.DataContext = new ViewModel();
+            DataContext = new ViewModel();
             InitializeComponent();
         }
     }

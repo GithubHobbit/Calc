@@ -6,11 +6,13 @@
     <Application.Resources>
         <Style x:Key="TextBlockStyle" TargetType="TextBlock" >
             <Setter Property="FontFamily" Value="Roboto"/>
-            <Setter Property="Margin" Value="3" />
             <Setter Property="Foreground" Value="#48DD00" />
-            <Setter Property="FontSize" Value="22" />
+            <Setter Property="FontSize" Value="38" />
             <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="Margin" Value="8,0" />
+            <Setter Property="Height" Value="63" />
+            <Setter Property="Margin" Value="9,0,9,0" />
+            <Setter Property="Text" Value="{Binding TextValue, ValidatesOnDataErrors=True, UpdateSourceTrigger=PropertyChanged}"/>
+            <Setter Property="ToolTip" Value="{Binding ErrorCollection[TextValue]}"/>
         </Style>
 
         <Style x:Key="TextBoxStyle" TargetType="TextBox" >

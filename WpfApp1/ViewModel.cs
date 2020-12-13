@@ -9,6 +9,7 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.Collections.ObjectModel;
 using System.Dynamic;
+using System.Windows.Controls;
 
 using Newtonsoft.Json;
 using System.IO;
@@ -17,17 +18,15 @@ using Calc;
 
 namespace WpfApp1
 {
-    class ViewModel : INotifyPropertyChanged
+    class ViewModel : INotifyPropertyChanged, IDataErrorInfo
     {
-        private static string leftValue = "0";
-        private static string rightValue = null;
-        private static string op = null;
-
         public event PropertyChangedEventHandler PropertyChanged;
         protected virtual void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+
+        private static bool isComma = false;
 
         public ViewModel()
         {
@@ -35,7 +34,7 @@ namespace WpfApp1
             _memory = new ObservableCollection<string>();
         }
 
-        private string textValue = "0";
+        private string textValue = "";
         public string TextValue
         {
             get => textValue;
@@ -44,10 +43,6 @@ namespace WpfApp1
                 textValue = value;
                 OnPropertyChanged(nameof(TextValue));
             }
-        }
-
-        public void PrintValue() {
-            TextValue = leftValue + " " + op + " " + rightValue;
         }
 
         private ICommand _toMemory;
@@ -60,6 +55,33 @@ namespace WpfApp1
                 }, () => TextValue.Length > 0);
         }
 
+        private ICommand _sumMem;
+        public ICommand SumMem
+        {
+            get => _sumMem ?? new RelayCommand(() =>
+            {
+                string result = ParserCalc.calculate(TextValue);
+                if (result == "error")
+                    result = "";
+                TextValue = result;
+                Memory[Memory.Count - 1] = Convert.ToString(Convert.ToDouble(Memory[Memory.Count - 1]) + Convert.ToDouble(result));
+            }, () => string.IsNullOrEmpty(TextValue) == false && Memory.Any()); //??????????????????//
+        }
+
+        private ICommand _subMem;
+        public ICommand SubMem
+        {
+            get => _subMem ?? new RelayCommand(() =>
+            {
+                string result = ParserCalc.calculate(TextValue);
+                if (result == "error")
+                    result = "";
+                TextValue = result;
+
+                Memory[Memory.Count - 1] = Convert.ToString(Convert.ToDouble(Memory[Memory.Count - 1]) - Convert.ToDouble(result));
+            }, () => string.IsNullOrEmpty(TextValue) == false && Memory.Any());
+        }
+
         private ICommand _removeFromMemory;
         public ICommand RemoveFromMemory
         {
@@ -70,23 +92,30 @@ namespace WpfApp1
                 }, () => Memory.Any());
         }
 
+        private ICommand _takeMemory;
+        public ICommand TakeMemory
+        {
+            get => _takeMemory ?? new RelayCommand<TextBox>((x) =>
+            {
+                TextValue = x.Text;
+            }, x => true);
+        }
+
+        private ICommand _delMemory;
+        public ICommand DelMemory
+        {
+            get => _delMemory ?? new RelayCommand<TextBox>((x) =>
+            {
+                Memory.Remove(x.Text);
+            }, x => true);
+        }
 
         private ICommand addNumber;
         public ICommand AddNumber
         {
             get => addNumber ?? new RelayCommand<string>(x =>
             {
-                if (op == null)
-                {
-                    if (leftValue == "0")
-                    {
-                        leftValue = x;
-                    }
-                    else leftValue += x;
-                }
-                else rightValue += x;
-
-                PrintValue();
+                TextValue += x;
             }, x => true);
         }
 
@@ -95,35 +124,53 @@ namespace WpfApp1
         {
             get => calculate ?? new RelayCommand<string>(x =>
             {
-                if (rightValue == null)
+                if (TextValue == "") return;
+
+                char checkOp = TextValue[TextValue.Length - 1];
+                int indexOp = "+-*/".IndexOf(checkOp);
+                if (indexOp != -1)
+                    TextValue = TextValue.Remove(TextValue.Length - 1);
+
+                if (x == "=")
                 {
-                    if (x == "=")
-                        Expressions.Add(new Expression(textValue, leftValue));
-
-                    else op = x;
+                    string result = ParserCalc.calculate(TextValue);
+                    Expressions.Add(new Expression(textValue, result));
+                    if (result == "error")
+                        result = "";
+                    TextValue = result;
+                    if (result.IndexOf(',') != -1)
+                        isComma = true;
                 }
-                else if (rightValue != null)
+                if ("+-*/".IndexOf(x) != -1)
                 {
-                    if (x == "=")
-                    {
-                        string exp = leftValue + op + rightValue;
-                        leftValue = ParserCalc.calculate(exp);
-                        Expressions.Add(new Expression(textValue, leftValue));
-                        op = null;
-                    }
-                    else
-                    {
-                        leftValue = leftValue + op + rightValue;
-                        op = x;
-                    }
-                    
-                    rightValue = null;
-                       
+                    TextValue += x;
+                    isComma = false;
                 }
-
-                PrintValue();
-
+                if (x == "," && isComma == false)
+                {
+                    TextValue += x;
+                    isComma = true;
+                }
             }, x => true);
+        }
+
+        ICommand _brackets;
+        public ICommand Brackets
+        {
+            get => _brackets ?? new RelayCommand<string>(x =>
+            {
+                TextValue += x;
+            }, x => true);
+        }
+
+        ICommand _back;
+        public ICommand Back
+        {
+            get => _back ?? new RelayCommand(() =>
+            {
+                if (TextValue == "") return;
+                TextValue = TextValue.Remove(TextValue.Length - 1);
+            }, () => true);
         }
 
         private ICommand _clear;
@@ -131,10 +178,7 @@ namespace WpfApp1
         {
             get => _clear ?? new RelayCommand(() =>
             {
-                leftValue = "0";
-                TextValue = leftValue;
-                rightValue = null;
-                op = null;
+                TextValue = "";
             }, () => true);
         }
 
@@ -160,7 +204,27 @@ namespace WpfApp1
         {
             get => _memory;
         }
+        
+        public Dictionary<string, string> CollectionError { get; private set; } = new Dictionary<string, string>();
+        public string Error => null;
 
+        public string this[string name]
+        {
+            get
+            {
+                string messageError = null;
+                if (name == "TextValue")
+                        if (string.IsNullOrWhiteSpace(TextValue))
+                            messageError = "Empty field";
+
+                if (CollectionError.ContainsKey(name))
+                    CollectionError[name] = messageError;
+                else if (messageError != null)
+                    CollectionError.Add(name, messageError);
+                OnPropertyChanged(nameof(CollectionError));
+                return messageError;
+            }
+        }
         /*
         var serializeObject = JsonConvert.SerializeObject(student, Base64Formatting.Indented);
         File.WriteAllText("my-json.json", serializeObject);

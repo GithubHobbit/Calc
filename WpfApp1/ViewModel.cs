@@ -1,22 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Windows.Data;
 using System.Windows.Input;
-using System.Collections.ObjectModel;
-using System.Dynamic;
 using System.Windows.Controls;
-
-using Newtonsoft.Json;
-using System.IO;
-
+using Calc.Interfaces;
+using Calc.Models;
 using Calc;
 
-namespace WpfApp1
+namespace Calculator
 {
     class ViewModel : INotifyPropertyChanged, IDataErrorInfo
     {
@@ -28,10 +19,16 @@ namespace WpfApp1
 
         private static bool isComma = false;
 
+        public IHistory History { get; }
+        public IMemory Mem { get; }
+
         public ViewModel()
         {
-            _expression = new ObservableCollection<Expression>();
-            _memory = new ObservableCollection<string>();
+            //History = new HistoryInFile();
+            History = new HistoryDataBase();
+            //Mem = new MemoryInRam();
+            //Mem = new MemoryInFile();
+            Mem = new MemoryDataBase();
         }
 
         private string textValue = "";
@@ -51,7 +48,7 @@ namespace WpfApp1
             get => _toMemory ?? new RelayCommand(
                 () =>
                 {
-                    Memory.Add(TextValue);
+                    Mem.Add(TextValue);
                 }, () => TextValue.Length > 0);
         }
 
@@ -64,8 +61,8 @@ namespace WpfApp1
                 if (result == "error")
                     result = "";
                 TextValue = result;
-                Memory[Memory.Count - 1] = Convert.ToString(Convert.ToDouble(Memory[Memory.Count - 1]) + Convert.ToDouble(result));
-            }, () => string.IsNullOrEmpty(TextValue) == false && Memory.Any()); //??????????????????//
+                Mem.Increase(Mem.Count - 1, TextValue);
+            }, () => string.IsNullOrEmpty(TextValue) == false && Mem.Any());
         }
 
         private ICommand _subMem;
@@ -78,18 +75,17 @@ namespace WpfApp1
                     result = "";
                 TextValue = result;
 
-                Memory[Memory.Count - 1] = Convert.ToString(Convert.ToDouble(Memory[Memory.Count - 1]) - Convert.ToDouble(result));
-            }, () => string.IsNullOrEmpty(TextValue) == false && Memory.Any());
+                Mem.Decrease(Mem.Count - 1, TextValue);
+            }, () => string.IsNullOrEmpty(TextValue) == false && Mem.Any());
         }
 
         private ICommand _removeFromMemory;
         public ICommand RemoveFromMemory
         {
-            get => _removeFromMemory ?? new RelayCommand(
-                () =>
-                {
-                    Memory.RemoveAt(Memory.Count() - 1);
-                }, () => Memory.Any());
+            get => _removeFromMemory ?? new RelayCommand(() =>
+            {
+                Mem.RemoveAtIndex(Mem.Count - 1);
+            }, () => Mem.Any());
         }
 
         private ICommand _takeMemory;
@@ -106,7 +102,7 @@ namespace WpfApp1
         {
             get => _delMemory ?? new RelayCommand<TextBox>((x) =>
             {
-                Memory.Remove(x.Text);
+                Mem.Remove(x.Text);
             }, x => true);
         }
 
@@ -134,7 +130,7 @@ namespace WpfApp1
                 if (x == "=")
                 {
                     string result = ParserCalc.calculate(TextValue);
-                    Expressions.Add(new Expression(textValue, result));
+                    History.Add(new Calc.Models.Expression(textValue, result));
                     if (result == "error")
                         result = "";
                     TextValue = result;
@@ -182,30 +178,17 @@ namespace WpfApp1
             }, () => true);
         }
 
-        private ObservableCollection<Expression> _expression;
-        public ObservableCollection<Expression> Expressions
+        private ICommand _clearAll;
+        public ICommand ClearAll
         {
-            get => _expression;
-        }
-
-        public class Expression
-        {
-            public string Exp { get; }
-            public string Value { get; }
-            public Expression(string expression, string result)
+            get => _clearAll ?? new RelayCommand(() =>
             {
-                Exp = expression;
-                Value = result;
-            }
+                Mem.Clear();
+                History.Clear();
+            }, () => Mem.Values.Count > 0 || History.Values.Count > 0);
         }
 
-        private ObservableCollection<string> _memory;
-        public ObservableCollection<string> Memory
-        {
-            get => _memory;
-        }
-        
-        public Dictionary<string, string> CollectionError { get; private set; } = new Dictionary<string, string>();
+        public Dictionary<string, string> ErrorCollection { get; private set; } = new Dictionary<string, string>();
         public string Error => null;
 
         public string this[string name]
@@ -217,27 +200,13 @@ namespace WpfApp1
                         if (string.IsNullOrWhiteSpace(TextValue))
                             messageError = "Empty field";
 
-                if (CollectionError.ContainsKey(name))
-                    CollectionError[name] = messageError;
+                if (ErrorCollection.ContainsKey(name))
+                    ErrorCollection[name] = messageError;
                 else if (messageError != null)
-                    CollectionError.Add(name, messageError);
-                OnPropertyChanged(nameof(CollectionError));
+                    ErrorCollection.Add(name, messageError);
+                OnPropertyChanged(nameof(ErrorCollection));
                 return messageError;
             }
         }
-        /*
-        var serializeObject = JsonConvert.SerializeObject(student, Base64Formatting.Indented);
-        File.WriteAllText("my-json.json", serializeObject);
-            var result = FileStyleUriParser.ReadAllText("my-json.json");
-        File.Exist();
-
-        Var otherStudent = JsonConvert.DeserializedObject<Group>(serializeObject);
-        
-        public static void expr(Expression exp)
-        {
-            var serializeObject = JsonConvert.SerializeObject(exp, Formatting.Indented);
-            File.WriteAllText("my-json.json", serializeObject);
-            var result = File.ReadAllText("my-json.json");
-        } */
     }
 }

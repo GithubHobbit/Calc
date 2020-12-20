@@ -115,10 +115,10 @@ namespace Calculator
             }, x => true);
         }
 
-        private ICommand calculate;
-        public ICommand Calculate
+        private ICommand _addOperation;
+        public ICommand AddOperation
         {
-            get => calculate ?? new RelayCommand<string>(x =>
+            get => _addOperation ?? new RelayCommand<string>(x =>
             {
                 if (TextValue == "") return;
 
@@ -127,16 +127,6 @@ namespace Calculator
                 if (indexOp != -1)
                     TextValue = TextValue.Remove(TextValue.Length - 1);
 
-                if (x == "=")
-                {
-                    string result = ParserCalc.calculate(TextValue);
-                    History.Add(new Calc.Models.Expression(textValue, result));
-                    if (result == "error")
-                        result = "";
-                    TextValue = result;
-                    if (result.IndexOf(',') != -1)
-                        isComma = true;
-                }
                 if ("+-*/".IndexOf(x) != -1)
                 {
                     TextValue += x;
@@ -148,6 +138,35 @@ namespace Calculator
                     isComma = true;
                 }
             }, x => true);
+        }
+
+        ICommand _addComma;
+        public ICommand AddComma
+        {
+            get => _addComma ?? new RelayCommand<string>(x =>
+            {
+                if (isComma == false)
+                {
+                    TextValue += x;
+                    isComma = true;
+                }
+            }, x => true);
+        }
+
+        private ICommand _calculate;
+        public ICommand Calculate
+        {
+            get => _calculate ?? new RelayCommand<string>(x =>
+            {
+                string result = ParserCalc.calculate(TextValue);
+                History.Add(new Expression(textValue, result));
+                if (result == "error")
+                    result = "";
+                TextValue = result;
+                if (result.IndexOf(',') != -1)
+                    isComma = true;
+                else isComma = false;
+            }, x => ParserCalc.isCorrect(TextValue));
         }
 
         ICommand _brackets;
@@ -165,6 +184,7 @@ namespace Calculator
             get => _back ?? new RelayCommand(() =>
             {
                 if (TextValue == "") return;
+                if (TextValue[TextValue.Length - 1] == ',') isComma = false;
                 TextValue = TextValue.Remove(TextValue.Length - 1);
             }, () => true);
         }
@@ -175,6 +195,7 @@ namespace Calculator
             get => _clear ?? new RelayCommand(() =>
             {
                 TextValue = "";
+                isComma = false;
             }, () => true);
         }
 
@@ -197,8 +218,8 @@ namespace Calculator
             {
                 string messageError = null;
                 if (name == "TextValue")
-                        if (string.IsNullOrWhiteSpace(TextValue))
-                            messageError = "Empty field";
+                    if (string.IsNullOrWhiteSpace(TextValue))
+                        messageError = "Empty field";
 
                 if (ErrorCollection.ContainsKey(name))
                     ErrorCollection[name] = messageError;

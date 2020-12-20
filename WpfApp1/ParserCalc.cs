@@ -76,7 +76,10 @@ namespace Calc
                 if (exp[arrOp[i]] == '*')
                     value = Convert.ToString(Double.Parse(arrValue[i]) * Double.Parse(arrValue[i + 1]));
                 else if (exp[arrOp[i]] == '/')
-                    value = Convert.ToString(Double.Parse(arrValue[i]) / Double.Parse(arrValue[i + 1]));
+                {
+                    double double_value = Double.Parse(arrValue[i]) / Double.Parse(arrValue[i + 1]);
+                    value = Convert.ToString(Math.Round(double_value, 3));
+                }
                 if (value != "")                                                                                    // Присваиваю результат левому операнду в массиве, а правый удаляю
                 {
                     arrValue[i] = value;
@@ -100,7 +103,10 @@ namespace Calc
                 if (exp[arrOp[i]] == '+')
                     result = Convert.ToString(Double.Parse(result) + Double.Parse(arrValue[i + 1]));
                 if (exp[arrOp[i]] == '-')
-                    result = Convert.ToString(Double.Parse(result) - Double.Parse(arrValue[i + 1]));
+                {
+                    double value = Double.Parse(result) - Double.Parse(arrValue[i + 1]);
+                    result = Convert.ToString(Math.Round(value, 3));
+                }
             }
             return result;
         }
@@ -126,5 +132,42 @@ namespace Calc
             Array.Sort(arrOfIndexSymbols);
             return arrOfIndexSymbols;
         }
+
+        public static bool isCorrect(string exp)
+        {
+            if (exp != "" &&
+                "+-*/,".IndexOf(exp[exp.Length - 1]) == -1 &&
+                isRightBrackets(exp))
+                return true;
+            return false;
+        }
+
+        private static bool isRightBrackets(string exp)
+        {
+            int queue = 0;          // queue - очередь скобок. Т.к. по умолчанию открыта одна скобка, то ожидается одна закрывающая (поэтому очередь пока состоит из одной закр. скобки)
+            char isLastBracket = '-';
+            for (int i = 0; i < exp.Length; i++)
+            {
+                if (exp[i] == '(')
+                {
+                    if (isLastBracket == ')') return false;
+                    isLastBracket = '(';
+                    queue++;
+                }
+                else if (exp[i] == ')')
+                {
+                    isLastBracket = ')';
+                    queue--;
+                }
+
+                if (queue < 0) return false;
+
+            }
+            if (queue == 0)
+                return true;
+            else return false;
+        }
     }
 }
+
+

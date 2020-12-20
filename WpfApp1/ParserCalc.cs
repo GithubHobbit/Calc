@@ -128,6 +128,7 @@ namespace Calc
                 }
             }
 
+
             Array.Resize(ref arrOfIndexSymbols, size);
             Array.Sort(arrOfIndexSymbols);
             return arrOfIndexSymbols;

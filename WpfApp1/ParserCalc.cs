@@ -78,7 +78,10 @@ namespace Calc
                 else if (exp[arrOp[i]] == '/')
                 {
                     double double_value = Double.Parse(arrValue[i]) / Double.Parse(arrValue[i + 1]);
-                    value = Convert.ToString(Math.Round(double_value, 3));
+                    double sep = double_value - (int)double_value;
+                    if (((sep * 10000) % 1) != 0)
+                        value = Convert.ToString(Math.Round(double_value, 3));
+                    else value = Convert.ToString(double_value);
                 }
                 if (value != "")                                                                                    // Присваиваю результат левому операнду в массиве, а правый удаляю
                 {
@@ -105,7 +108,10 @@ namespace Calc
                 if (exp[arrOp[i]] == '-')
                 {
                     double value = Double.Parse(result) - Double.Parse(arrValue[i + 1]);
-                    result = Convert.ToString(Math.Round(value, 3));
+                    double sep = value - (int)value;
+                    if (((sep * 10000) % 1) != 0)
+                        result = Convert.ToString(Math.Round(value, 3));
+                    else result = Convert.ToString(value);
                 }
             }
             return result;

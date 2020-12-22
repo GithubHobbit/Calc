@@ -17,7 +17,7 @@ namespace Calculator.Tests
         public void Div_7Div3_Returned()
         {
             var res = ParserCalc.calculate("7 / 3");
-            Assert.Equal(Convert.ToString(7.0 / 3), res);
+            Assert.Equal(Convert.ToString(2.333), res);
         }
  
         [Fact]
@@ -44,7 +44,7 @@ namespace Calculator.Tests
         public void Exp_10Div3Mul6Plus3_Returned()
         {
             var res = ParserCalc.calculate("10/3*6+3");
-            Assert.Equal("23", res);
+            Assert.Equal("22.998", res);
         }
         [Fact]
         public void Exp_1Div2Mul3PlusUnderfined_Returned()

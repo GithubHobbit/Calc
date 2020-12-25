@@ -44,7 +44,7 @@ namespace Calculator.Tests
         public void Exp_10Div3Mul6Plus3_Returned()
         {
             var res = ParserCalc.calculate("10/3*6+3");
-            Assert.Equal("22.998", res);
+            Assert.Equal("22,998", res);
         }
         [Fact]
         public void Exp_1Div2Mul3PlusUnderfined_Returned()

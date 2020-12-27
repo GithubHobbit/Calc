@@ -44,7 +44,7 @@ namespace Calculator.Tests
         public void Exp_10Div3Mul6Plus3_Returned()
         {
             var res = ParserCalc.calculate("10/3*6+3");
-            Assert.Equal("22,998", res);
+            Assert.Equal("22.998", res);
         }
         [Fact]
         public void Exp_1Div2Mul3PlusUnderfined_Returned()
@@ -55,13 +55,13 @@ namespace Calculator.Tests
         [Fact]
         public void Exp_5Div2point5_Returned()
         {
-            var res = ParserCalc.calculate("5/2,5");
+            var res = ParserCalc.calculate("5/2.5");
             Assert.Equal("2", res);
         }
         [Fact]
         public void Exp_10Plus20Mul2Div4Minus10Mul2point5_Returned()
         {
-            var res = ParserCalc.calculate("10+20*2/4-10*2,5");
+            var res = ParserCalc.calculate("10+20*2/4-10*2.5");
             Assert.Equal("-5", res);
         }
         [Fact]
@@ -80,7 +80,7 @@ namespace Calculator.Tests
         public void BigExpressionTest()
         {
             var res = ParserCalc.calculate("((4))+(2*3)-(1+2)*3-(10/((7-2)-1))");
-            Assert.Equal("-1,5", res);
+            Assert.Equal("-1.5", res);
         }
 
         [Fact]
